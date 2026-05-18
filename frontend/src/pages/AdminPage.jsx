@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom"
 function AdminPage() {
   const [productos, setProductos] = useState([])
   const [imagen, setImagen] = useState(null)
+  const [preview, setPreview] = useState("")
+  const [productoEditando, setProductoEditando] = useState(null)
 
   const [formulario, setFormulario] = useState({
     nombre: "",
@@ -24,8 +26,12 @@ function AdminPage() {
 
   const cargarProductos = async () => {
     try {
-      const respuesta = await fetch("http://localhost:4000/products")
+      const respuesta = await fetch(
+        "https://peppatendencia-api.onrender.com/products"
+      )
+
       const data = await respuesta.json()
+
       setProductos(data)
     } catch (error) {
       console.error("Error cargando productos:", error)
@@ -43,6 +49,18 @@ function AdminPage() {
     })
   }
 
+  const limpiarFormulario = () => {
+    setFormulario({
+      nombre: "",
+      precio: "",
+      categoria: "",
+      stock: "",
+    })
+
+    setImagen(null)
+    setProductoEditando(null)
+  }
+
   const agregarProducto = async (e) => {
     e.preventDefault()
 
@@ -50,60 +68,103 @@ function AdminPage() {
       !formulario.nombre ||
       !formulario.precio ||
       !formulario.categoria ||
-      !formulario.stock ||
-      !imagen
+      !formulario.stock
     ) {
-      alert("Completa todos los campos y selecciona una imagen")
+      alert("Completa todos los campos")
       return
     }
 
-    const formData = new FormData()
-    formData.append("nombre", formulario.nombre)
-    formData.append("precio", formulario.precio)
-    formData.append("categoria", formulario.categoria)
-    formData.append("stock", formulario.stock)
-    formData.append("imagen", imagen)
-
     try {
-      const respuesta = await fetch("http://localhost:4000/products", {
-        method: "POST",
-        body: formData,
-      })
+      const formData = new FormData()
+
+      formData.append("nombre", formulario.nombre)
+      formData.append("precio", formulario.precio)
+      formData.append("categoria", formulario.categoria)
+      formData.append("stock", formulario.stock)
+
+      if (imagen) {
+        formData.append("imagen", imagen)
+      }
+
+      let respuesta
+
+      if (productoEditando) {
+        formData.append("imagenActual", productoEditando.imagen)
+
+        respuesta = await fetch(
+          `https://peppatendencia-api.onrender.com/products/${productoEditando.id}`,
+          {
+            method: "PUT",
+            body: formData,
+          }
+        )
+      } else {
+        if (!imagen) {
+          alert("Selecciona una imagen")
+          return
+        }
+
+        respuesta = await fetch(
+          "https://peppatendencia-api.onrender.com/products",
+          {
+            method: "POST",
+            body: formData,
+          }
+        )
+      }
 
       if (!respuesta.ok) {
-        throw new Error("Error al guardar producto")
+        throw new Error("Error guardando producto")
       }
 
       await cargarProductos()
 
-      setFormulario({
-        nombre: "",
-        precio: "",
-        categoria: "",
-        stock: "",
-      })
-
-      setImagen(null)
+      limpiarFormulario()
 
       e.target.reset()
 
-      alert("Producto guardado correctamente")
+      alert(
+        productoEditando
+          ? "Producto actualizado correctamente"
+          : "Producto guardado correctamente"
+      )
     } catch (error) {
       console.error("Error guardando producto:", error)
-      alert("Error al guardar el producto")
+      alert("Error guardando producto")
     }
   }
 
   const eliminarProducto = async (id) => {
     try {
-      await fetch(`http://localhost:4000/products/${id}`, {
-        method: "DELETE",
-      })
+      await fetch(
+        `https://peppatendencia-api.onrender.com/products/${id}`,
+        {
+          method: "DELETE",
+        }
+      )
 
-      setProductos(productos.filter((producto) => producto.id !== id))
+      setProductos(
+        productos.filter((producto) => producto.id !== id)
+      )
     } catch (error) {
       console.error("Error eliminando producto:", error)
     }
+  }
+
+  const editarProducto = (producto) => {
+    setProductoEditando(producto)
+
+    setFormulario({
+      nombre: producto.nombre,
+      precio: producto.precio,
+      categoria: producto.categoria,
+      stock: producto.stock,
+    })
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    })
   }
 
   return (
@@ -129,7 +190,9 @@ function AdminPage() {
             className="bg-white rounded-[35px] shadow-xl p-8 border border-pink-100"
           >
             <h2 className="text-3xl font-black text-pink-600 mb-8">
-              Agregar producto
+              {productoEditando
+                ? "Editar producto"
+                : "Agregar producto"}
             </h2>
 
             <div className="space-y-5">
@@ -154,7 +217,7 @@ function AdminPage() {
               <input
                 type="text"
                 name="categoria"
-                placeholder="Categoría, ejemplo: Vestidos"
+                placeholder="Categoría"
                 value={formulario.categoria}
                 onChange={manejarCambio}
                 className="w-full border border-pink-200 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-pink-300"
@@ -170,18 +233,44 @@ function AdminPage() {
               />
 
               <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setImagen(e.target.files[0])}
-                className="w-full border border-pink-200 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-pink-300"
-              />
+  type="file"
+  accept="image/*"
+  onChange={(e) => {
+    const file = e.target.files[0]
 
+    setImagen(file)
+
+    if (file) {
+      setPreview(URL.createObjectURL(file))
+    }
+  }}
+  className="w-full border border-pink-200 rounded-2xl px-5 py-4 outline-none focus:ring-2 focus:ring-pink-300"
+/>
+{preview && (
+  <img
+    src={preview}
+    alt="Preview"
+    className="w-40 h-40 object-cover rounded-3xl border border-pink-200 mx-auto"
+  />
+)}
               <button
                 type="submit"
                 className="w-full bg-pink-500 hover:bg-pink-600 text-white py-4 rounded-full font-black shadow-lg"
               >
-                Guardar producto
+                {productoEditando
+                  ? "Guardar cambios"
+                  : "Guardar producto"}
               </button>
+
+              {productoEditando && (
+                <button
+                  type="button"
+                  onClick={limpiarFormulario}
+                  className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-4 rounded-full font-black"
+                >
+                  Cancelar edición
+                </button>
+              )}
             </div>
           </form>
 
@@ -225,12 +314,21 @@ function AdminPage() {
                       </p>
                     </div>
 
-                    <button
-                      onClick={() => eliminarProducto(producto.id)}
-                      className="bg-red-100 text-red-500 px-4 py-2 rounded-full font-bold h-fit hover:bg-red-200"
-                    >
-                      Eliminar
-                    </button>
+                    <div className="flex flex-col gap-2">
+                      <button
+                        onClick={() => editarProducto(producto)}
+                        className="bg-blue-100 text-blue-600 px-4 py-2 rounded-full font-bold hover:bg-blue-200"
+                      >
+                        Editar
+                      </button>
+
+                      <button
+                        onClick={() => eliminarProducto(producto.id)}
+                        className="bg-red-100 text-red-500 px-4 py-2 rounded-full font-bold hover:bg-red-200"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

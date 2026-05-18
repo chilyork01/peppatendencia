@@ -1,14 +1,23 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Navbar from "./components/Navbar"
 import CartDrawer from "./components/CartDrawer"
 import Footer from "./components/Footer"
 import AppRoutes from "./routes/AppRoutes"
 
-const WHATSAPP_NUMBER = "+56973431340"
+const WHATSAPP_NUMBER = "56973431340"
 
 function App() {
-  const [carrito, setCarrito] = useState([])
+  const [carrito, setCarrito] = useState(() => {
+    const carritoGuardado = localStorage.getItem("carrito")
+
+    return carritoGuardado ? JSON.parse(carritoGuardado) : []
+  })
+
   const [carritoAbierto, setCarritoAbierto] = useState(false)
+
+  useEffect(() => {
+    localStorage.setItem("carrito", JSON.stringify(carrito))
+  }, [carrito])
 
   const agregarAlCarrito = (producto) => {
     setCarrito([...carrito, producto])
@@ -19,16 +28,16 @@ function App() {
     setCarrito(carrito.filter((_, index) => index !== indexProducto))
   }
 
- const total = carrito.reduce((acc, producto) => {
-  const precioLimpio = Number(
-    String(producto.precio).replace(/[^0-9]/g, "")
-  )
+  const total = carrito.reduce((acc, producto) => {
+    const precioLimpio = Number(
+      String(producto.precio).replace(/[^0-9]/g, "")
+    )
 
-  return acc + precioLimpio
-}, 0)
+    return acc + precioLimpio
+  }, 0)
 
-const mensajeWhatsApp = encodeURIComponent(
-  `Hola Mariajose 👋
+  const mensajeWhatsApp = encodeURIComponent(
+    `Hola Mariajose 👋
 Quiero hacer este pedido:
 
 ${carrito
@@ -47,7 +56,7 @@ Mi nombre es:
 Mi dirección es:
 Método de pago:
 Comentarios:`
-)
+  )
 
   const whatsappLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${mensajeWhatsApp}`
 

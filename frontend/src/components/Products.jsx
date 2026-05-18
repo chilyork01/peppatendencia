@@ -11,7 +11,7 @@ function Products() {
       try {
 
         const response = await axios.get(
-          "http://localhost:4000/products"
+          "https://peppatendencia-api.onrender.com/products"
         )
 
         setProductos(response.data)
