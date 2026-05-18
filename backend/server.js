@@ -8,7 +8,17 @@ const db = require("./db")
 
 const app = express()
 
-app.use(cors())
+app.use(
+  cors({
+    origin: [
+      "https://peppatendencia.com",
+      "https://www.peppatendencia.com"
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+  })
+)
+
 app.use(express.json())
 app.use("/uploads", express.static("uploads"))
 
@@ -16,8 +26,11 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/")
   },
+
   filename: (req, file, cb) => {
-    const uniqueName = Date.now() + path.extname(file.originalname)
+    const uniqueName =
+      Date.now() + path.extname(file.originalname)
+
     cb(null, uniqueName)
   }
 })
@@ -45,9 +58,13 @@ app.post("/products", upload.single("imagen"), async (req, res) => {
     )
 
     res.status(201).json(result.rows[0])
+
   } catch (error) {
     console.error("Error creando producto:", error.message)
-    res.status(500).json({ error: "Error creando producto" })
+
+    res.status(500).json({
+      error: "Error creando producto"
+    })
   }
 })
 
@@ -58,9 +75,16 @@ app.get("/products", async (req, res) => {
     )
 
     res.json(result.rows)
+
   } catch (error) {
-    console.error("Error obteniendo productos:", error.message)
-    res.status(500).json({ error: "Error obteniendo productos" })
+    console.error(
+      "Error obteniendo productos:",
+      error.message
+    )
+
+    res.status(500).json({
+      error: "Error obteniendo productos"
+    })
   }
 })
 
@@ -84,17 +108,27 @@ app.put("/products/:id", upload.single("imagen"), async (req, res) => {
            imagen = $5
        WHERE id = $6
        RETURNING *`,
+
       [nombre, precio, categoria, stock, imagen, id]
     )
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Producto no encontrado" })
+      return res.status(404).json({
+        error: "Producto no encontrado"
+      })
     }
 
     res.json(result.rows[0])
+
   } catch (error) {
-    console.error("Error editando producto:", error.message)
-    res.status(500).json({ error: "Error editando producto" })
+    console.error(
+      "Error editando producto:",
+      error.message
+    )
+
+    res.status(500).json({
+      error: "Error editando producto"
+    })
   }
 })
 
@@ -102,16 +136,29 @@ app.delete("/products/:id", async (req, res) => {
   const { id } = req.params
 
   try {
-    await db.query("DELETE FROM products WHERE id = $1", [id])
-    res.json({ message: "Producto eliminado" })
+    await db.query(
+      "DELETE FROM products WHERE id = $1",
+      [id]
+    )
+
+    res.json({
+      message: "Producto eliminado"
+    })
+
   } catch (error) {
-    console.error("Error eliminando producto:", error.message)
-    res.status(500).json({ error: "Error eliminando producto" })
+    console.error(
+      "Error eliminando producto:",
+      error.message
+    )
+
+    res.status(500).json({
+      error: "Error eliminando producto"
+    })
   }
 })
 
 const PORT = process.env.PORT || 4000
 
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`)
+  console.log(`Servidor corriendo en puerto ${PORT}`)
 })
