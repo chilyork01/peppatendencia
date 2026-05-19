@@ -1,5 +1,5 @@
 import Hero from "../components/Hero"
-import Products from "../components/Products"
+import Products from "../components/ProductsTemp"
 import Contact from "../components/Contact"
 
 function Home({ agregarAlCarrito, whatsappNumber }) {
