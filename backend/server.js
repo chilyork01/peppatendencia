@@ -2,6 +2,8 @@ const express = require("express")
 const cors = require("cors")
 const multer = require("multer")
 const path = require("path")
+const sharp = require("sharp")
+const fs = require("fs")
 require("dotenv").config()
 
 const db = require("./db")
@@ -37,11 +39,46 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage })
 
+const optimizarImagen = async (req, res, next) => {
+  if (!req.file) {
+    return next()
+  }
+
+  try {
+    const rutaOriginal = req.file.path
+
+    const nombreOptimizado =
+      "optimized-" + req.file.filename
+
+    const rutaOptimizada = `uploads/${nombreOptimizado}`
+
+    await sharp(rutaOriginal)
+      .resize(800)
+      .jpeg({ quality: 80 })
+      .toFile(rutaOptimizada)
+
+    fs.unlinkSync(rutaOriginal)
+
+    req.file.filename = nombreOptimizado
+
+    next()
+  } catch (error) {
+    console.error("Error optimizando imagen:", error)
+    res.status(500).json({
+      error: "Error optimizando imagen",
+    })
+  }
+}
+
 app.get("/", (req, res) => {
   res.send("API Peppa Tendencia funcionando 🚀")
 })
 
-app.post("/products", upload.single("imagen"), async (req, res) => {
+app.post(
+  "/products",
+  upload.single("imagen"),
+  optimizarImagen,
+  async (req, res) => {
   const { nombre, precio, categoria, stock } = req.body
 
   const imagen = req.file
@@ -88,7 +125,11 @@ app.get("/products", async (req, res) => {
   }
 })
 
-app.put("/products/:id", upload.single("imagen"), async (req, res) => {
+app.put(
+  "/products/:id",
+  upload.single("imagen"),
+  optimizarImagen,
+  async (req, res) => {
   const { id } = req.params
   const { nombre, precio, categoria, stock } = req.body
 
