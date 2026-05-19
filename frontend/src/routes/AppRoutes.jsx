@@ -5,6 +5,8 @@ import CartPage from "../pages/CartPage"
 import ContactPage from "../pages/ContactPage"
 import AdminPage from "../pages/AdminPage"
 import AdminLogin from "../pages/AdminLogin"
+import ProtectedAdminRoute from "./ProtectedAdminRoute"
+
 function AppRoutes({
   carrito,
   agregarAlCarrito,
@@ -44,10 +46,18 @@ function AppRoutes({
         path="/contacto"
         element={<ContactPage whatsappNumber={whatsappNumber} />}
       />
-<Route path="/admin-login" element={<AdminLogin />} />
-      <Route path="/admin" element={<AdminPage />} />
+
+      <Route path="/admin-login" element={<AdminLogin />} />
+
+      <Route
+        path="/admin"
+        element={
+          <ProtectedAdminRoute>
+            <AdminPage />
+          </ProtectedAdminRoute>
+        }
+      />
     </Routes>
-    
   )
 }
 
