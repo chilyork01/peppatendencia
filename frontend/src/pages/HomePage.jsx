@@ -1,12 +1,12 @@
 import Hero from "../components/Hero"
-import Products from "../components/products"
+import ProductsPage from "./ProductsPage"
 import Contact from "../components/Contact"
 
 function HomePage({ agregarAlCarrito, whatsappNumber }) {
   return (
     <>
       <Hero />
-      <Products agregarAlCarrito={agregarAlCarrito} />
+      <ProductsPage agregarAlCarrito={agregarAlCarrito} />
       <Contact whatsappNumber={whatsappNumber} />
     </>
   )
