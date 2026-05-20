@@ -2,7 +2,7 @@ import Hero from "../components/Hero"
 import Products from "../components/products"
 import Contact from "../components/Contact"
 
-function Home({ agregarAlCarrito, whatsappNumber }) {
+function HomePage({ agregarAlCarrito, whatsappNumber }) {
   return (
     <>
       <Hero />
@@ -12,4 +12,4 @@ function Home({ agregarAlCarrito, whatsappNumber }) {
   )
 }
 
-export default Home
+export default HomePage
