@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { ShoppingBag, Search } from "lucide-react"
+import { motion } from "framer-motion"
 
 function ProductsPage({ agregarAlCarrito }) {
   const [productos, setProductos] = useState([])
@@ -93,10 +94,14 @@ function ProductsPage({ agregarAlCarrito }) {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {productosFiltrados.map((producto) => (
-              <article
-                key={producto.id}
-                className="group bg-white rounded-[30px] md:rounded-[35px] shadow-lg hover:shadow-2xl overflow-hidden border border-pink-100 transition duration-300"
-              >
+             <motion.article
+  key={producto.id}
+  initial={{ opacity: 0, y: 30 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.4 }}
+  whileHover={{ y: -8 }}
+  className="group bg-white rounded-[30px] md:rounded-[35px] shadow-lg hover:shadow-2xl overflow-hidden border border-pink-100 transition duration-300"
+>
                 <div className="relative overflow-hidden bg-pink-50">
                   <img
                     src={producto.imagen}
@@ -132,7 +137,7 @@ function ProductsPage({ agregarAlCarrito }) {
                     Agregar
                   </button>
                 </div>
-              </article>
+              </motion.article>
             ))}
           </div>
         )}
