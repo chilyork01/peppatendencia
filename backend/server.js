@@ -4,7 +4,14 @@ const multer = require("multer")
 const path = require("path")
 const sharp = require("sharp")
 const fs = require("fs")
+const { v2: cloudinary } = require("cloudinary")
+
 require("dotenv").config()
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+})
 
 const db = require("./db")
 
@@ -30,20 +37,11 @@ if (!fs.existsSync("uploads")) {
 
 app.use("/uploads", express.static("uploads"))
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/")
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = Date.now() + path.extname(file.originalname)
-    cb(null, uniqueName)
-  }
-})
-
+const storage = multer.memoryStorage()
 const upload = multer({ storage })
 
 const getBaseUrl = (req) => {
-  return `${req.protocol}://${req.get("host")}`
+  return process.env.BASE_URL || `${req.protocol}://${req.get("host")}`
 }
 
 const optimizarImagen = async (req, res, next) => {
@@ -68,6 +66,25 @@ const optimizarImagen = async (req, res, next) => {
     res.status(500).json({ error: "Error optimizando imagen" })
   }
 }
+const subirImagenCloudinary = (fileBuffer) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: "peppatendencia",
+        resource_type: "image",
+        transformation: [
+          { width: 900, crop: "limit", quality: "auto", fetch_format: "auto" }
+        ]
+      },
+      (error, result) => {
+        if (error) reject(error)
+        else resolve(result)
+      }
+    )
+
+    stream.end(fileBuffer)
+  })
+}
 
 app.get("/", (req, res) => {
   res.send("API Peppa Tendencia funcionando 🚀")
@@ -75,15 +92,16 @@ app.get("/", (req, res) => {
 
 app.post(
   "/products",
-  upload.single("imagen"),
-  optimizarImagen,
-  async (req, res) => {
+ upload.single("imagen"),
+async (req, res) => {
     const { nombre, precio, categoria, stock } = req.body
 
-    const imagen = req.file
-      ? `${getBaseUrl(req)}/uploads/${req.file.filename}`
-      : ""
+let imagen = ""
 
+if (req.file) {
+  const resultado = await subirImagenCloudinary(req.file.buffer)
+  imagen = resultado.secure_url
+}
     try {
       const result = await db.query(
         `INSERT INTO products 
@@ -116,19 +134,18 @@ app.get("/products", async (req, res) => {
 
 app.put(
   "/products/:id",
-  upload.single("imagen"),
-  optimizarImagen,
-  async (req, res) => {
+ upload.single("imagen"),
+async (req, res) => {
     const { id } = req.params
     const { nombre, precio, categoria, stock, imagenActual } = req.body
 
     try {
       let imagen = imagenActual || ""
 
-      if (req.file) {
-        imagen = `${getBaseUrl(req)}/uploads/${req.file.filename}`
-      }
-
+    if (req.file) {
+  const resultado = await subirImagenCloudinary(req.file.buffer)
+  imagen = resultado.secure_url
+}
       const result = await db.query(
         `UPDATE products
          SET nombre = $1,
