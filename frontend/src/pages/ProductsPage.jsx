@@ -6,7 +6,8 @@ function ProductsPage({ agregarAlCarrito }) {
   const [productos, setProductos] = useState([])
   const [busqueda, setBusqueda] = useState("")
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("Todas")
-
+  const [imagenSeleccionada, setImagenSeleccionada] = useState(null)
+  
   useEffect(() => {
     fetch("https://peppatendencia-api.onrender.com/products")
       .then((res) => res.json())
@@ -103,11 +104,12 @@ function ProductsPage({ agregarAlCarrito }) {
   className="group bg-white rounded-[30px] md:rounded-[35px] shadow-lg hover:shadow-2xl overflow-hidden border border-pink-100 transition duration-300"
 >
                 <div className="relative overflow-hidden bg-pink-50">
-                  <img
-                    src={producto.imagen}
-                    alt={producto.nombre}
-                    className="w-full h-72 md:h-80 object-cover group-hover:scale-105 transition duration-500"
-                  />
+                 <img
+  src={producto.imagen}
+  alt={producto.nombre}
+  onClick={() => setImagenSeleccionada(producto.imagen)}
+  className="w-full h-72 md:h-80 object-cover group-hover:scale-105 transition duration-500 cursor-pointer"
+/>
 
                   <span className="absolute top-4 left-4 bg-white/90 backdrop-blur px-4 py-2 rounded-full text-pink-500 text-sm font-black shadow">
                     {producto.categoria}
@@ -142,6 +144,25 @@ function ProductsPage({ agregarAlCarrito }) {
           </div>
         )}
       </div>
+      {imagenSeleccionada && (
+  <div
+    onClick={() => setImagenSeleccionada(null)}
+    className="fixed inset-0 z-[200] bg-black/80 flex items-center justify-center p-4"
+  >
+    <img
+      src={imagenSeleccionada}
+      alt="Producto ampliado"
+      className="max-w-full max-h-[85vh] rounded-3xl shadow-2xl object-contain"
+    />
+
+    <button
+      onClick={() => setImagenSeleccionada(null)}
+      className="absolute top-6 right-6 bg-white text-pink-500 px-5 py-3 rounded-full font-black"
+    >
+      Cerrar
+    </button>
+  </div>
+)}
     </main>
   )
 }

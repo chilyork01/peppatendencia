@@ -1,10 +1,12 @@
 import { Routes, Route } from "react-router-dom"
+
 import Home from "../pages/HomePage"
 import ProductsPage from "../pages/ProductsPage"
 import CartPage from "../pages/CartPage"
 import ContactPage from "../pages/ContactPage"
 import AdminPage from "../pages/AdminPage"
 import AdminLogin from "../pages/AdminLogin"
+import AdminProducts from "../pages/AdminProducts"
 import ProtectedAdminRoute from "./ProtectedAdminRoute"
 
 function AppRoutes({
@@ -54,6 +56,15 @@ function AppRoutes({
         element={
           <ProtectedAdminRoute>
             <AdminPage />
+          </ProtectedAdminRoute>
+        }
+      />
+
+      <Route
+        path="/admin/products"
+        element={
+          <ProtectedAdminRoute>
+            <AdminProducts />
           </ProtectedAdminRoute>
         }
       />
