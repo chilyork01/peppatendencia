@@ -58,7 +58,7 @@ function Footer() {
               </p>
 
               <a
-                href="https://instagram.com"
+                href="https://instagram.com/peppa.tendencias"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-pink-500 block"
@@ -67,7 +67,7 @@ function Footer() {
               </a>
 
               <a
-                href="https://facebook.com"
+                href="https://facebook.com/Maripeppaa"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-pink-500 block"
@@ -75,7 +75,7 @@ function Footer() {
                 Facebook
               </a>
               <a
-  href="https://www.tiktok.com"
+  href="https://www.tiktok.com/@peppa.tendencias"
   target="_blank"
   rel="noopener noreferrer"
   className="hover:text-pink-500 block"
