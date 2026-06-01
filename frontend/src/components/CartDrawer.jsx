@@ -1,6 +1,6 @@
 import { X, Trash2, ShoppingBag, MessageCircle } from "lucide-react"
 
-const WHATSAPP_NUMBER = "56973431340"
+const WHATSAPP_NUMBER = "56922467647"
 
 function CartDrawer({
   carrito,
